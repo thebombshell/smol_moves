@@ -1,5 +1,6 @@
 
 #include "window_renderer.h"
+#include <assert.h>
 #include <sys/timeb.h>
 
 const int context_attribute_list[] = 
@@ -24,7 +25,9 @@ PIXELFORMATDESCRIPTOR pixel_format_description =
 	, 0, 0, 0, 0, 0
 	, 24, 8, 0,
 	PFD_MAIN_PLANE, 0, 0, 0, 0 };
-	
+
+int g_world_loc, g_view_loc, g_proj_loc;
+
 unsigned long long get_time_ms() {
 	
 	struct timeb time;
@@ -80,30 +83,51 @@ void setup_gl() {
 	glEnableVertexAttribArray = load_gl_function("glEnableVertexAttribArray");
 	glVertexAttribPointer = load_gl_function("glVertexAttribPointer");
 	
-	glDrawArraysIndirect = load_gl_function("glDrawArraysIndirect");
-	glDrawElementsIndirect = load_gl_function("glDrawElementsIndirect");
-	glMultiDrawArraysIndirect = load_gl_function("glMultiDrawArraysIndirect");
-	glMultiDrawElementsIndirect = load_gl_function("glMultiDrawElementsIndirect");
-	
 	wglCreateContextAttribsARB = load_gl_function("wglCreateContextAttribsARB");
 	
 	context = wglCreateContextAttribsARB(g_device, 0, context_attribute_list);
 	wglMakeCurrent(g_device, context);
 	wglDeleteContext(g_context);
 	g_context = context;
+	
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
 }
 
-void setup_window(WNDPROC t_window_proc) {
+LRESULT CALLBACK window_proc(HWND t_handle, UINT t_message, WPARAM t_w_param, LPARAM t_l_param) {
+	
+	switch (t_message) {
+		
+		case WM_DESTROY:
+		
+			PostQuitMessage(0);
+		return 0;
+		
+		case WM_KEYDOWN:
+		
+			g_is_key_down[t_w_param] = 1;
+		return 0;
+		
+		case WM_KEYUP:
+			
+			g_is_key_down[t_w_param] = 0;
+		return 0;
+	}
+	return DefWindowProc(t_handle, t_message, t_w_param, t_l_param);
+}
+
+void setup_window() {
 	
 	int major_version;
 	int minor_version;
 	int pixel_format;
+	memset(g_is_key_down, 0, 256);
 	WNDCLASS window_class = {};
 	
     g_console = GetStdHandle(STD_OUTPUT_HANDLE);
 	window_class.style = CS_HREDRAW | CS_VREDRAW;
-	window_class.lpfnWndProc = t_window_proc;
+	window_class.lpfnWndProc = window_proc;
 	window_class.hInstance = GetModuleHandle(0);
 	window_class.hIcon = LoadIcon(window_class.hInstance, IDI_APPLICATION);
 	window_class.hCursor = LoadCursor(0, IDC_ARROW);
@@ -148,7 +172,7 @@ void shutdown_window() {
 	DestroyWindow(g_window);
 }
 
-void file_as_string_alloc(const char* t_path, char** t_buffer, int* t_length) {
+void alloc_string_from_file(const char* t_path, char** t_buffer, int* t_length) {
 	
 	*t_buffer = 0;
 	*t_length = 0;
@@ -168,7 +192,9 @@ void file_as_string_alloc(const char* t_path, char** t_buffer, int* t_length) {
 	fclose(file);
 }
 
-unsigned int create_shader(unsigned int t_shader_type, unsigned int t_string_count, const char** t_strings, int* t_string_lengths) {
+unsigned int create_shader(unsigned int t_shader_type, unsigned int t_string_count, const char** t_strings, const int* t_string_lengths) {
+	
+	assert(t_string_count > 0);
 	
 	int is_successful;
 	unsigned int shader = glCreateShader(t_shader_type);
@@ -192,6 +218,8 @@ unsigned int create_shader(unsigned int t_shader_type, unsigned int t_string_cou
 }
 
 unsigned int create_program(unsigned int t_shader_count, unsigned int* t_shaders) {
+	
+	assert(t_shader_count > 0);
 	
 	unsigned int program = glCreateProgram();
 	unsigned int i = 0;
@@ -218,83 +246,78 @@ unsigned int create_program(unsigned int t_shader_count, unsigned int* t_shaders
 	return program;
 }
 
-void setup_renderer() {
+unsigned int create_shader_from_file(const char* t_path, unsigned int t_shader_type, const char* t_header, int t_header_length) {
 	
-	g_camera_eye[0] = 0.0f;
-	g_camera_eye[1] = 0.0f;
-	g_camera_eye[2] = 0.0f;
+	static const char* null_string = "";
 	
-	g_camera_look[0] = 0.0f;
-	g_camera_look[1] = 1.0f;
-	g_camera_look[2] = 0.0f;
+	char* shader_contents;
+	int shader_contents_length;
+	alloc_string_from_file(t_path, &shader_contents, &shader_contents_length);
+	const char* strings[2] = { t_header ? t_header : null_string, shader_contents };
+	const int lengths[2] = { t_header ? t_header_length : 0, shader_contents_length };
 	
-	g_camera_up[0] = 0.0f;
-	g_camera_up[1] = 0.0f;
-	g_camera_up[2] = 1.0f;
+	unsigned int shader = create_shader(t_shader_type, 2, strings, lengths);
+	free(shader_contents);
 	
-	glGenBuffers(RENDERER_BUFFER_COUNT, g_buffers);
-	glGenVertexArrays(RENDERER_VERTEX_ARRAY_COUNT, g_vertex_arrays);
+	return shader;
+}
+
+unsigned int create_program_from_files(int t_shader_count, const char** t_paths, const unsigned int* t_shader_types, const char* t_header, int t_header_length) {
 	
-	g_draw_count = 0;
+	assert(t_shader_count > 0);
 	
-	float vertices[24] = 
-		{ -0.5f, -0.5f, 0.0f
-		, 0.5f, -0.5f, 0.0f
-		, 0.5f, 0.5f, 0.0f
-		, -0.5f, 0.5f, 0.0f
+	unsigned int* shaders = malloc(sizeof(unsigned int) * t_shader_count);
+	int i;
+	for (i = 0; i < t_shader_count; ++i) {
 		
-		, -0.5f, -0.5f, 1.0f
-		, 0.5f, -0.5f, 1.0f
-		, 0.5f, 0.5f, 1.0f
-		, -0.5f, 0.5f, 1.0f };
-	unsigned int indices[36] = 
+		shaders[i] = create_shader_from_file(t_paths[i], t_shader_types[i], t_header, t_header_length);
+	}
+	free(shaders);
+	int program = create_program(t_shader_count, shaders);
+	for (i = 0; i < t_shader_count; ++i) {
+		
+		if (shaders[i]) {
+			
+			glDeleteShader(shaders[i]);
+		}
+	}
+	return program;
+}
+
+const float* geometry_cube_get_vertices() {
+	
+	static const float vertices[24] =
+		{ -0.5f, -0.5f, -0.5f
+		, 0.5f, -0.5f, -0.5f
+		, 0.5f, 0.5f, -0.5f
+		, -0.5f, 0.5f, -0.5f
+		, -0.5f, -0.5f, 0.5f
+		, 0.5f, -0.5f, 0.5f
+		, 0.5f, 0.5f, 0.5f
+		, -0.5f, 0.5f, 0.5f };
+	
+	return vertices;
+}
+
+const unsigned int* geometry_cube_get_indices() {
+	
+	static const unsigned int indices[36] = 
 		{ 0, 3, 2, 0, 2, 1 
 		, 4, 5, 6, 4, 6, 7
 		, 0, 1, 5, 0, 5, 4
 		, 1, 2, 6, 1, 6, 5
 		, 2, 3, 7, 2, 7, 6
-		, 3, 0, 4, 3, 4, 7};
-	unsigned int indirects[5] =	{ 36, 1, 0, 0, 0 };
-	glBindVertexArray(g_vertex_arrays[0]);
-	glBindBuffer(GL_ARRAY_BUFFER, g_buffers[0]);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_buffers[1]);
-	glBindBuffer(GL_DRAW_INDIRECT_BUFFER, g_buffers[2]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 24, vertices, GL_STATIC_DRAW);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * 36, indices, GL_STATIC_DRAW);
-	glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(unsigned int) * 5, indirects, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, 0, 0, 0);
-	glBindVertexArray(0);
-	queue_draw(g_vertex_arrays[0], GL_TRIANGLES, GL_UNSIGNED_INT, 1);
-	
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
-}
-
-void shutdown_renderer() {
-	
-	glDeleteBuffers(RENDERER_BUFFER_COUNT, g_buffers);
-}
-
-void queue_draw( unsigned int t_vertex_array, unsigned int t_mode, unsigned int t_type, unsigned int t_count) {
-	
-	g_draw_vertex_arrays[g_draw_count] = t_vertex_array;
-	g_draw_modes[g_draw_count] = t_mode;
-	g_draw_types[g_draw_count] = t_type;
-	g_draw_counts[g_draw_count] = t_count;
-	++g_draw_count;
-}
-
-void render() {
-	
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	
-	int i;
-	for (i = 0; i < g_draw_count; ++i) {
+		, 3, 0, 4, 3, 4, 7 };
 		
-		glBindVertexArray(g_vertex_arrays[i]);
-		glMultiDrawElementsIndirect(g_draw_modes[i], g_draw_types[i], 0, g_draw_counts[i], 0);
-	}
+	return indices;
+}
+
+unsigned int geometry_cube_get_vertex_count() {
 	
-	SwapBuffers(g_device);
+	return 8;
+}
+
+unsigned int geometry_cube_get_index_count() {
+	
+	return 36;
 }

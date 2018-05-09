@@ -64,7 +64,7 @@ float* mat4_scaling(float* t_target, float* t_scale);
 float* mat4_transformation(float* t_target, float* t_translation, float* t_rotation, float* t_scale);
 float* mat4_lookat(float* t_target, float* t_eye, float* t_look, float* t_up);
 float* mat4_frustum(float* t_target, float t_l, float t_r, float t_t, float t_b, float t_n, float t_f);
-float* mat4_orthographic(float* t_target, float t_ar, float t_width, float t_n, float t_f);
+float* mat4_orthographic(float* t_target, float t_l, float t_r, float t_t, float t_b, float t_n, float t_f);
 float* mat4_perspective(float* t_target, float t_ar, float t_fov, float t_n, float t_f);
 
 #endif

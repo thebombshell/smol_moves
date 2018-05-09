@@ -24,16 +24,8 @@ HWND g_window;
 HDC g_device;
 HANDLE g_console;
 HGLRC g_context;
-float g_camera_eye[3];
-float g_camera_look[3];
-float g_camera_up[3];
-unsigned int g_buffers[RENDERER_BUFFER_COUNT];
-unsigned int g_vertex_arrays[RENDERER_BUFFER_COUNT];
-unsigned int g_draw_vertex_arrays[RENDERER_MAX_DRAW_COUNT];
-unsigned int g_draw_modes[RENDERER_MAX_DRAW_COUNT];
-unsigned int g_draw_types[RENDERER_MAX_DRAW_COUNT];
-unsigned int g_draw_counts[RENDERER_MAX_DRAW_COUNT];
-unsigned int g_draw_count;
+
+signed char g_is_key_down[256];
 
 #define printf_red(...) SetConsoleTextAttribute(g_console, FOREGROUND_RED); printf(__VA_ARGS__);
 #define printf_green(...) SetConsoleTextAttribute(g_console, FOREGROUND_GREEN); printf(__VA_ARGS__);
@@ -76,27 +68,24 @@ PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
 PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
 PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
 
-PFNGLDRAWARRAYSINDIRECTPROC glDrawArraysIndirect;
-PFNGLDRAWELEMENTSINDIRECTPROC glDrawElementsIndirect;
-PFNGLMULTIDRAWARRAYSINDIRECTPROC glMultiDrawArraysIndirect;
-PFNGLMULTIDRAWELEMENTSINDIRECTPROC glMultiDrawElementsIndirect;
-
 PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB;
 PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB;
 
 unsigned long long get_time_ms();
 
-void setup_window(WNDPROC);
+void setup_window();
 void shutdown_window();
 
-void file_as_string_alloc(const char* t_path, char** t_buffer, int* t_length);
-unsigned int create_shader(unsigned int t_shader_type, unsigned int t_string_count, const char** t_strings, int* t_string_lengths);
+void alloc_string_from_file(const char* t_path, char** t_buffer, int* t_length);
+unsigned int create_shader(unsigned int t_shader_type, unsigned int t_string_count, const char** t_strings, const int* t_string_lengths);
 unsigned int create_program(unsigned int t_shader_count, unsigned int* t_shaders);
+unsigned int create_shader_from_file(const char* t_path, unsigned int t_shader_type, const char* t_header, int t_header_length);
+unsigned int create_program_from_files(int t_shader_count, const char** t_paths, const unsigned int* t_shader_types, const char* t_header, int t_header_length);
 
-void setup_renderer();
-void shutdown_renderer();
+const float* geometry_cube_get_vertices();
+const unsigned int* geometry_cube_get_indices();
+unsigned int geometry_cube_get_vertex_count();
+unsigned int geometry_cube_get_index_count();
 
-void queue_draw(unsigned int t_vertex_array, unsigned int t_mode, unsigned int t_type, unsigned int t_count);
-void render();
 
 #endif

@@ -219,16 +219,22 @@ float* mat4_transformation(float* t_target, float* t_translation, float* t_q, fl
 	float qs[3];
 	vec4_muls(q2, t_q, 2.0f);
 	vec3_mul(qs, q2, t_q);
-	t_target[0] = t_scale[0] * (1.0f - qs[1] - qs[2]);
-	t_target[1] = t_scale[0] * (q2[0] * t_q[1] - q2[2] * t_q[3]);
-	t_target[2] = t_scale[0] * (q2[0] * t_q[2] + q2[1] * t_q[3]);
-	t_target[4] = t_scale[1] * (q2[0] * t_q[1] + q2[2] * t_q[3]);
-	t_target[5] = t_scale[1] * (1.0f - qs[0] - qs[2]);
-	t_target[6] = t_scale[1] * (q2[1] * t_q[2] - q2[0] * t_q[3]);
-	t_target[8] = t_scale[2] * (q2[0] * t_q[2] - q2[1] * t_q[3]);
-	t_target[9] = t_scale[2] * (q2[1] * t_q[2] + q2[0] * t_q[3]);
-	t_target[10] = t_scale[2] * (1.0f - qs[0] - qs[1]);
-	t_target[3] = t_target[7] = t_target[11] = 0.0f;
+	
+	t_target[0] = 1.0f - qs[1] - qs[2];
+	t_target[1] = q2[0] * t_q[1] - q2[2] * t_q[3];
+	t_target[2] = q2[0] * t_q[2] + q2[1] * t_q[3];
+	t_target[3] = 0.0f;
+	
+	t_target[4] = q2[0] * t_q[1] + q2[2] * t_q[3];
+	t_target[5] = 1.0f - qs[0] - qs[2];
+	t_target[6] = q2[1] * t_q[2] - q2[0] * t_q[3];
+	t_target[7] = 0.0f;
+	
+	t_target[8] = q2[0] * t_q[2] - q2[1] * t_q[3];
+	t_target[9] = q2[1] * t_q[2] + q2[0] * t_q[3];
+	t_target[10] = 1.0f - qs[0] - qs[1];
+	t_target[11] = 0.0f;
+	
 	t_target[12] = t_translation[0];
 	t_target[13] = t_translation[1];
 	t_target[14] = t_translation[2];
@@ -269,43 +275,89 @@ float* mat4_lookat(float* t_target, float* t_eye, float* t_look, float* t_up) {
 
 float* mat4_frustum(float* t_target, float t_l, float t_r, float t_b, float t_t, float t_n, float t_f) {
 	
-	float w = t_r - t_l;
-	float h = t_t - t_b;
+	float h = t_r - t_l;
+	float w = t_t - t_b;
 	float d = t_f - t_n;
 	float n2 = t_n * 2.0f;
+	
 	t_target[0] = n2 / w;
+	t_target[1] = 0.0f;
+	t_target[2] = 0.0f;
+	t_target[3] = 0.0f;
+	
+	t_target[4] = 0.0f;
 	t_target[5] = n2 / h;
+	t_target[6] = 0.0f;
+	t_target[7] = 0.0f;
 	
-	t_target[2] = (t_r + t_l) / w;
-	t_target[6] = (t_t + t_b) / h;
+	t_target[8] = (t_r + t_l) / w;
+	t_target[9] = (t_t + t_b) / h;
 	t_target[10] = (t_f + t_n) / d;
-	t_target[11] = -(n2 * t_f) / d;
-	t_target[14] = 1.0f;
+	t_target[11] = 1.0;
 	
-	t_target[1] = t_target[3] = 
-	t_target[4] = t_target[7] = 
-	t_target[8] = t_target[9] = 
-	t_target[12] = t_target[13] = t_target[15] = 0.0f;
+	t_target[12] = 0.0f;
+	t_target[13] = 0.0f;
+	t_target[14] = -(n2 * t_f) / d;
+	t_target[15] = 0.0f;
+	
 	return t_target;
 }
 
-float* mat4_orthographic(float* t_target, float t_ar, float t_height, float t_n, float t_f);
-float* mat4_perspective(float* t_target, float t_ar, float t_fov, float t_n, float t_f) {
+float* mat4_orthographic(float* t_target, float t_l, float t_r, float t_b, float t_t, float t_n, float t_f) {
 	
-	float w = tan(t_fov * 0.5f);
-	float h = w / t_ar;
+	float h = t_r - t_l;
+	float w = t_t - t_b;
 	float d = t_f - t_n;
 	
-	t_target[0] = t_n / w;
-	t_target[5] = t_n / h;
-	t_target[10] = -(t_f + t_n) / d;
-	t_target[11] = -(2.0f * t_f * t_n) / d;
-	t_target[14] = -1.0f;
+	t_target[0] = 2.0f / w;
+	t_target[1] = 0.0f;
+	t_target[2] = 0.0f;
+	t_target[3] = 0.0f;
 	
-	t_target[1] = t_target[2] = t_target[3] = 
-	t_target[4] = t_target[6] = t_target[7] = 
-	t_target[8] = t_target[9] = 
-	t_target[12] = t_target[13] = t_target[15] = 0.0f;
+	t_target[4] = 0.0f;
+	t_target[5] = 2.0f / h;
+	t_target[6] = 0.0f;
+	t_target[7] = 0.0f;
+	
+	t_target[8] = 0.0f;
+	t_target[9] = 0.0f;
+	t_target[10] = 2.0f / d;
+	t_target[11] = 0.0f;
+	
+	t_target[8] = -(t_r + t_l) / w;
+	t_target[9] = -(t_t + t_b) / h;
+	t_target[10] = -(t_f + t_n) / d;
+	t_target[15] = 1.0f;
+	
+	return t_target;
+}
+
+float* mat4_perspective(float* t_target, float t_ar, float t_fov, float t_n, float t_f) {
+	
+	float h = tan(t_fov * 0.5f);
+	float w = h * t_ar;
+	float d = t_f - t_n;
+	
+	t_target[0] = 1.0f / w;
+	t_target[1] = 0.0f;
+	t_target[2] = 0.0f;
+	t_target[3] = 0.0f;
+	
+	t_target[4] = 0.0f;
+	t_target[5] = 1.0f / h;
+	t_target[6] = 0.0f;
+	t_target[7] = 0.0f;
+	
+	t_target[8] = 0.0f;
+	t_target[9] = 0.0f;
+	t_target[10] = (t_f + t_n) / d;
+	t_target[11] = 1.0;
+	
+	t_target[12] = 0.0f;
+	t_target[13] = 0.0f;
+	t_target[14] = -(2.0f * t_n * t_f) / d;
+	t_target[15] = 0.0f;
+	
 	return t_target;
 }
 
