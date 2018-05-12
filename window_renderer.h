@@ -71,6 +71,8 @@ PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
 PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB;
 PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB;
 
+void check_gl_error();
+
 unsigned long long get_time_ms();
 
 void setup_window();

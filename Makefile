@@ -2,18 +2,18 @@
 C = gcc
 GDB = gdb
 
-CFLAGS = -std=c89 -static-libgcc -Wall -Werror -Wfatal-errors
+CFLAGS = -std=c89 -Wall -Werror -Wfatal-errors
 
 SOURCES := $(wildcard *.c)
 OBJECTS := $(patsubst %.c, %.o, $(SOURCES))
 INCLUDE :=
-LDFLAGS := -lopengl32 -lgdi32
+LDFLAGS := -lopengl32 -lgdi32 -shared-libgcc
 GDBFLAGS = -cd ./
 
 all: main
 
 main: $(OBJECTS)
-	$(C) -Os $(CFLAGS) $(SOURCES) $(INCLUDE) -o main $(LDFLAGS)
+	$(C) -Os $(CFLAGS) $(SOURCES) $(INCLUDE) -o main $(LDFLAGS) -s
 
 debug: $(OBJECTS)
 	$(C) -g $(CFLAGS) $(SOURCES) $(INCLUDE) -o main $(LDFLAGS)

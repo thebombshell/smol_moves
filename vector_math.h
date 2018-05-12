@@ -7,6 +7,8 @@
 #include "window_renderer.h"
 #include <math.h>
 
+float randf();
+
 #define DECLARE_VECTOR_METHOD_GROUP( SIZE ) \
 	float* vec ## SIZE ## _copy(float* t_target, float* t_b); \
 	float* vec ## SIZE ## _add(float* t_target, float* t_a, float* t_b); \

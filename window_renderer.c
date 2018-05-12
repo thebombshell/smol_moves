@@ -272,7 +272,6 @@ unsigned int create_program_from_files(int t_shader_count, const char** t_paths,
 		
 		shaders[i] = create_shader_from_file(t_paths[i], t_shader_types[i], t_header, t_header_length);
 	}
-	free(shaders);
 	int program = create_program(t_shader_count, shaders);
 	for (i = 0; i < t_shader_count; ++i) {
 		
@@ -281,6 +280,7 @@ unsigned int create_program_from_files(int t_shader_count, const char** t_paths,
 			glDeleteShader(shaders[i]);
 		}
 	}
+	free(shaders);
 	return program;
 }
 
@@ -320,4 +320,44 @@ unsigned int geometry_cube_get_vertex_count() {
 unsigned int geometry_cube_get_index_count() {
 	
 	return 36;
+}
+
+void check_gl_error() {
+	
+	unsigned int error = glGetError();
+	
+	if (error != GL_NO_ERROR) {
+
+		printf_yellow("[gl error]: ");
+	}
+	switch (error) {
+		case GL_INVALID_ENUM:
+		
+			printf_red("Invalid Enum!\n");
+		break;
+		case GL_INVALID_VALUE:
+		
+			printf_red("Invalid Value!\n");
+		break;
+		case GL_INVALID_OPERATION:
+		
+			printf_red("Invalid Enum!\n");
+		break;
+		case GL_INVALID_FRAMEBUFFER_OPERATION:
+		
+			printf_red("Invalid Enum!\n");
+		break;
+		case GL_OUT_OF_MEMORY:
+		
+			printf_red("Invalid Enum!\n");
+		break;
+		case GL_STACK_UNDERFLOW:
+		
+			printf_red("Invalid Enum!\n");
+		break;
+		case GL_STACK_OVERFLOW:
+		
+			printf_red("Invalid Enum!\n");
+		break;
+	}
 }

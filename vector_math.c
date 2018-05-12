@@ -1,6 +1,11 @@
 
 #include "vector_math.h"
 
+float randf() {
+	
+	return (float)rand() / (float)RAND_MAX;
+}
+
 #define DEFINE_VECTOR_METHOD_GROUP( SIZE ) \
 	float* vec ## SIZE ## _copy(float* t_target, float* t_b) { unsigned int i; for (i = 0; i < SIZE; ++i) { t_target[i] = t_b[i]; } return t_target; } \
 	float* vec ## SIZE ## _add(float* t_target, float* t_a, float* t_b) { unsigned int i; for (i = 0; i < SIZE; ++i) { t_target[i] = t_a[i] + t_b[i]; } return t_target; } \
