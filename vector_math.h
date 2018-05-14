@@ -10,19 +10,19 @@
 float randf();
 
 #define DECLARE_VECTOR_METHOD_GROUP( SIZE ) \
-	float* vec ## SIZE ## _copy(float* t_target, float* t_b); \
-	float* vec ## SIZE ## _add(float* t_target, float* t_a, float* t_b); \
-	float* vec ## SIZE ## _sub(float* t_target, float* t_a, float* t_b); \
-	float* vec ## SIZE ## _mul(float* t_target, float* t_a, float* t_b); \
-	float* vec ## SIZE ## _div(float* t_target, float* t_a, float* t_b); \
-	float* vec ## SIZE ## _adds(float* t_target, float* t_a, float t_b); \
-	float* vec ## SIZE ## _subs(float* t_target, float* t_a, float t_b); \
-	float* vec ## SIZE ## _muls(float* t_target, float* t_a, float t_b); \
-	float* vec ## SIZE ## _divs(float* t_target, float* t_a, float t_b); \
-	float vec ## SIZE ## _dot(float* t_a, float* t_b); \
-	float vec ## SIZE ## _lensq(float* t_a); \
-	float vec ## SIZE ## _length(float* t_a); \
-	float* vec ## SIZE ## _normalize(float* t_target, float* t_a);
+	float* vec ## SIZE ## _copy(float* t_target, const float* t_b); \
+	float* vec ## SIZE ## _add(float* t_target, const float* t_a, const float* t_b); \
+	float* vec ## SIZE ## _sub(float* t_target, const float* t_a, const float* t_b); \
+	float* vec ## SIZE ## _mul(float* t_target, const float* t_a, const float* t_b); \
+	float* vec ## SIZE ## _div(float* t_target, const float* t_a, const float* t_b); \
+	float* vec ## SIZE ## _adds(float* t_target, const float* t_a, float t_b); \
+	float* vec ## SIZE ## _subs(float* t_target, const float* t_a, float t_b); \
+	float* vec ## SIZE ## _muls(float* t_target, const float* t_a, float t_b); \
+	float* vec ## SIZE ## _divs(float* t_target, const float* t_a, float t_b); \
+	float vec ## SIZE ## _dot(const float* t_a, const float* t_b); \
+	float vec ## SIZE ## _lensq(const float* t_a); \
+	float vec ## SIZE ## _length(const float* t_a); \
+	float* vec ## SIZE ## _normalize(float* t_target, const float* t_a);
 
 DECLARE_VECTOR_METHOD_GROUP( 2 )
 DECLARE_VECTOR_METHOD_GROUP( 3 )
