@@ -1,25 +1,26 @@
 
 #include "vector_math.h"
+#include <stdlib.h>
 
 float randf() {
 	
 	return (float)rand() / (float)RAND_MAX;
 }
 
-#define DEFINE_VECTOR_METHOD_GROUP( SIZE ) \
-	float* vec ## SIZE ## _copy(float* t_target, const float* t_b) { unsigned int i; for (i = 0; i < SIZE; ++i) { t_target[i] = t_b[i]; } return t_target; } \
-	float* vec ## SIZE ## _add(float* t_target, const float* t_a, const float* t_b) { unsigned int i; for (i = 0; i < SIZE; ++i) { t_target[i] = t_a[i] + t_b[i]; } return t_target; } \
-	float* vec ## SIZE ## _sub(float* t_target, const float* t_a, const float* t_b) { unsigned int i; for (i = 0; i < SIZE; ++i) { t_target[i] = t_a[i] - t_b[i]; } return t_target; } \
-	float* vec ## SIZE ## _mul(float* t_target, const float* t_a, const float* t_b) { unsigned int i; for (i = 0; i < SIZE; ++i) { t_target[i] = t_a[i] * t_b[i]; } return t_target; } \
-	float* vec ## SIZE ## _div(float* t_target, const float* t_a, const float* t_b) { unsigned int i; for (i = 0; i < SIZE; ++i) { t_target[i] = t_a[i] / t_b[i]; } return t_target; } \
-	float* vec ## SIZE ## _adds(float* t_target, const float* t_a, float t_b) { unsigned int i; for (i = 0; i < SIZE; ++i) { t_target[i] = t_a[i] + t_b; } return t_target; } \
-	float* vec ## SIZE ## _subs(float* t_target, const float* t_a, float t_b) { unsigned int i; for (i = 0; i < SIZE; ++i) { t_target[i] = t_a[i] - t_b; } return t_target; } \
-	float* vec ## SIZE ## _muls(float* t_target, const float* t_a, float t_b) { unsigned int i; for (i = 0; i < SIZE; ++i) { t_target[i] = t_a[i] * t_b; } return t_target; } \
-	float* vec ## SIZE ## _divs(float* t_target, const float* t_a, float t_b) { unsigned int i; for (i = 0; i < SIZE; ++i) { t_target[i] = t_a[i] / t_b; } return t_target; } \
-	float vec ## SIZE ## _dot(const float* t_a, const float* t_b) { int i; float output = 0.0f; for (i = 0; i < SIZE; ++i) { output += t_a[i] * t_b[i]; } return output; } \
-	float vec ## SIZE ## _lensq(const float* t_a) { return vec ## SIZE ## _dot(t_a, t_a); } \
-	float vec ## SIZE ## _length(const float* t_a) { return sqrt(vec ## SIZE ## _lensq(t_a)); } \
-	float* vec ## SIZE ## _normalize(float* t_target, const float* t_a) { return vec ## SIZE ## _divs(t_target, t_a, vec ## SIZE ## _length(t_a)); }
+#define DEFINE_VECTOR_METHOD_GROUP( T_SIZE ) \
+	float* vec ## T_SIZE ## _copy(float* t_target, const float* t_b) { unsigned int i; for (i = 0; i < T_SIZE; ++i) { t_target[i] = t_b[i]; } return t_target; } \
+	float* vec ## T_SIZE ## _add(float* t_target, const float* t_a, const float* t_b) { unsigned int i; for (i = 0; i < T_SIZE; ++i) { t_target[i] = t_a[i] + t_b[i]; } return t_target; } \
+	float* vec ## T_SIZE ## _sub(float* t_target, const float* t_a, const float* t_b) { unsigned int i; for (i = 0; i < T_SIZE; ++i) { t_target[i] = t_a[i] - t_b[i]; } return t_target; } \
+	float* vec ## T_SIZE ## _mul(float* t_target, const float* t_a, const float* t_b) { unsigned int i; for (i = 0; i < T_SIZE; ++i) { t_target[i] = t_a[i] * t_b[i]; } return t_target; } \
+	float* vec ## T_SIZE ## _div(float* t_target, const float* t_a, const float* t_b) { unsigned int i; for (i = 0; i < T_SIZE; ++i) { t_target[i] = t_a[i] / t_b[i]; } return t_target; } \
+	float* vec ## T_SIZE ## _adds(float* t_target, const float* t_a, float t_b) { unsigned int i; for (i = 0; i < T_SIZE; ++i) { t_target[i] = t_a[i] + t_b; } return t_target; } \
+	float* vec ## T_SIZE ## _subs(float* t_target, const float* t_a, float t_b) { unsigned int i; for (i = 0; i < T_SIZE; ++i) { t_target[i] = t_a[i] - t_b; } return t_target; } \
+	float* vec ## T_SIZE ## _muls(float* t_target, const float* t_a, float t_b) { unsigned int i; for (i = 0; i < T_SIZE; ++i) { t_target[i] = t_a[i] * t_b; } return t_target; } \
+	float* vec ## T_SIZE ## _divs(float* t_target, const float* t_a, float t_b) { unsigned int i; for (i = 0; i < T_SIZE; ++i) { t_target[i] = t_a[i] / t_b; } return t_target; } \
+	float vec ## T_SIZE ## _dot(const float* t_a, const float* t_b) { int i; float output = 0.0f; for (i = 0; i < T_SIZE; ++i) { output += t_a[i] * t_b[i]; } return output; } \
+	float vec ## T_SIZE ## _lensq(const float* t_a) { return vec ## T_SIZE ## _dot(t_a, t_a); } \
+	float vec ## T_SIZE ## _length(const float* t_a) { return sqrt(vec ## T_SIZE ## _lensq(t_a)); } \
+	float* vec ## T_SIZE ## _normalize(float* t_target, const float* t_a) { return vec ## T_SIZE ## _divs(t_target, t_a, vec ## T_SIZE ## _length(t_a)); }
 
 DEFINE_VECTOR_METHOD_GROUP( 2 )
 DEFINE_VECTOR_METHOD_GROUP( 3 )
@@ -43,7 +44,6 @@ float* vec3_rotate(float* t_target, float* t_a, float* t_b) {
 	quat_conjugate(conj, t_b);
 	quat_mul(temp, t_b, temp);
 	quat_mul(temp, temp, conj);
-	printf_white("temp: %f, %f, %f, %f;\n", temp[0], temp[1], temp[2], temp[3]);
 	return vec3_copy(t_target, temp);
 }
 
@@ -82,31 +82,31 @@ float* quat_mul(float* t_target, float* t_a, float* t_b) {
 	return quat_copy(t_target, temp);
 }
 
-#define DEFINE_MATRIX_METHOD_GROUP( SIZE ) \
-	float* mat ## SIZE ## _identity(float* t_target) \
-	{ unsigned int i, j; for (i = 0; i < SIZE; ++i) for (j = 0; j < SIZE; ++j) { t_target[i * SIZE + j] = i == j ? 1.0f : 0.0f; } return t_target; } \
-	float* mat ## SIZE ## _copy(float* t_target, float* t_b) \
-	{ unsigned int i, j; for (i = 0; i < SIZE; ++i) for (j = 0; j < SIZE; ++j) { t_target[i * SIZE + j] = t_b[i * SIZE + j]; } return t_target; } \
-	float* mat ## SIZE ## _minor(float* t_target, float* t_b, unsigned int t_ignore_r, unsigned int t_ignore_c) \
-	{ unsigned int i, j, x, y = 0; for (i = 0; i < SIZE; ++i) { if (i == t_ignore_r) continue; x = 0; for (j = 0; j < SIZE; ++j) { if (j == t_ignore_c) continue; t_target[y * (SIZE - 1) + x] = t_b[i * SIZE + j]; ++x; } ++y; } return t_target; } \
-	float* mat ## SIZE ## _mul(float* t_target, float* t_a, float* t_b) \
-	{ unsigned int i, j; float temp[SIZE * SIZE]; mat ## SIZE ## _transpose(temp, t_b); for (i = 0; i < SIZE; ++i) for (j = 0; j < SIZE; ++j) { t_target[i * SIZE + j] = vec ## SIZE ## _dot(&t_a[i * SIZE], &temp[j * SIZE]); } return t_target; } \
-	float* mat ## SIZE ## _adds(float* t_target, float* t_a, float t_b) \
-	{ unsigned int i, j; for (i = 0; i < SIZE; ++i) for (j = 0; j < SIZE; ++j) { t_target[i * SIZE + j] = t_a[i * SIZE + j] + t_b; } return t_target; } \
-	float* mat ## SIZE ## _subs(float* t_target, float* t_a, float t_b) \
-	{ unsigned int i, j; for (i = 0; i < SIZE; ++i) for (j = 0; j < SIZE; ++j) { t_target[i * SIZE + j] = t_a[i * SIZE + j] - t_b; } return t_target; } \
-	float* mat ## SIZE ## _muls(float* t_target, float* t_a, float t_b) \
-	{ unsigned int i, j; for (i = 0; i < SIZE; ++i) for (j = 0; j < SIZE; ++j) { t_target[i * SIZE + j] = t_a[i * SIZE + j] * t_b; } return t_target; } \
-	float* mat ## SIZE ## _divs(float* t_target, float* t_a, float t_b) \
-	{ unsigned int i, j; for (i = 0; i < SIZE; ++i) for (j = 0; j < SIZE; ++j) { t_target[i * SIZE + j] = t_a[i * SIZE + j] / t_b; } return t_target; } \
-	float* mat ## SIZE ## _cofactors(float* t_target, float* t_a) \
-	{ unsigned int i, j; mat ## SIZE ## _minors(t_target, t_a); for (i = 0; i < SIZE; ++i) for (j = 0; j < SIZE; ++j) { t_target[i * SIZE + j] *= ((j + (i % 2))% 2 == 0) ? 1.0f : -1.0f; } return t_target; } \
-	float* mat ## SIZE ## _transpose(float* t_target, float* t_a) \
-	{ unsigned int i, j; float temp[SIZE * SIZE]; mat ## SIZE ## _copy(temp, t_a); for (i = 0; i < SIZE; ++i) for (j = 0; j < SIZE; ++j) { t_target[i * SIZE + j] = temp[j * SIZE + i]; } return t_target; } \
-	float* mat ## SIZE ## _adjugate(float* t_target, float* t_a) \
-	{ mat ## SIZE ## _cofactors(t_target, t_a); mat ## SIZE ## _transpose(t_target, t_target); return t_target; } \
-	float* mat ## SIZE ## _invert(float* t_target, float* t_a) \
-	{ float determinant = mat ## SIZE ## _determinant(t_a); mat ## SIZE ## _adjugate(t_target, t_a); mat ## SIZE ## _muls(t_target, t_target, 1.0f / determinant); return t_target; }
+#define DEFINE_MATRIX_METHOD_GROUP( T_SIZE ) \
+	float* mat ## T_SIZE ## _identity(float* t_target) \
+	{ unsigned int i, j; for (i = 0; i < T_SIZE; ++i) for (j = 0; j < T_SIZE; ++j) { t_target[i * T_SIZE + j] = i == j ? 1.0f : 0.0f; } return t_target; } \
+	float* mat ## T_SIZE ## _copy(float* t_target, float* t_b) \
+	{ unsigned int i, j; for (i = 0; i < T_SIZE; ++i) for (j = 0; j < T_SIZE; ++j) { t_target[i * T_SIZE + j] = t_b[i * T_SIZE + j]; } return t_target; } \
+	float* mat ## T_SIZE ## _minor(float* t_target, float* t_b, unsigned int t_ignore_r, unsigned int t_ignore_c) \
+	{ unsigned int i, j, x, y = 0; for (i = 0; i < T_SIZE; ++i) { if (i == t_ignore_r) continue; x = 0; for (j = 0; j < T_SIZE; ++j) { if (j == t_ignore_c) continue; t_target[y * (T_SIZE - 1) + x] = t_b[i * T_SIZE + j]; ++x; } ++y; } return t_target; } \
+	float* mat ## T_SIZE ## _mul(float* t_target, float* t_a, float* t_b) \
+	{ unsigned int i, j; float temp[T_SIZE * T_SIZE]; mat ## T_SIZE ## _transpose(temp, t_b); for (i = 0; i < T_SIZE; ++i) for (j = 0; j < T_SIZE; ++j) { t_target[i * T_SIZE + j] = vec ## T_SIZE ## _dot(&t_a[i * T_SIZE], &temp[j * T_SIZE]); } return t_target; } \
+	float* mat ## T_SIZE ## _adds(float* t_target, float* t_a, float t_b) \
+	{ unsigned int i, j; for (i = 0; i < T_SIZE; ++i) for (j = 0; j < T_SIZE; ++j) { t_target[i * T_SIZE + j] = t_a[i * T_SIZE + j] + t_b; } return t_target; } \
+	float* mat ## T_SIZE ## _subs(float* t_target, float* t_a, float t_b) \
+	{ unsigned int i, j; for (i = 0; i < T_SIZE; ++i) for (j = 0; j < T_SIZE; ++j) { t_target[i * T_SIZE + j] = t_a[i * T_SIZE + j] - t_b; } return t_target; } \
+	float* mat ## T_SIZE ## _muls(float* t_target, float* t_a, float t_b) \
+	{ unsigned int i, j; for (i = 0; i < T_SIZE; ++i) for (j = 0; j < T_SIZE; ++j) { t_target[i * T_SIZE + j] = t_a[i * T_SIZE + j] * t_b; } return t_target; } \
+	float* mat ## T_SIZE ## _divs(float* t_target, float* t_a, float t_b) \
+	{ unsigned int i, j; for (i = 0; i < T_SIZE; ++i) for (j = 0; j < T_SIZE; ++j) { t_target[i * T_SIZE + j] = t_a[i * T_SIZE + j] / t_b; } return t_target; } \
+	float* mat ## T_SIZE ## _cofactors(float* t_target, float* t_a) \
+	{ unsigned int i, j; mat ## T_SIZE ## _minors(t_target, t_a); for (i = 0; i < T_SIZE; ++i) for (j = 0; j < T_SIZE; ++j) { t_target[i * T_SIZE + j] *= ((j + (i % 2))% 2 == 0) ? 1.0f : -1.0f; } return t_target; } \
+	float* mat ## T_SIZE ## _transpose(float* t_target, float* t_a) \
+	{ unsigned int i, j; float temp[T_SIZE * T_SIZE]; mat ## T_SIZE ## _copy(temp, t_a); for (i = 0; i < T_SIZE; ++i) for (j = 0; j < T_SIZE; ++j) { t_target[i * T_SIZE + j] = temp[j * T_SIZE + i]; } return t_target; } \
+	float* mat ## T_SIZE ## _adjugate(float* t_target, float* t_a) \
+	{ mat ## T_SIZE ## _cofactors(t_target, t_a); mat ## T_SIZE ## _transpose(t_target, t_target); return t_target; } \
+	float* mat ## T_SIZE ## _invert(float* t_target, float* t_a) \
+	{ float determinant = mat ## T_SIZE ## _determinant(t_a); mat ## T_SIZE ## _adjugate(t_target, t_a); mat ## T_SIZE ## _muls(t_target, t_target, 1.0f / determinant); return t_target; }
 
 DEFINE_MATRIX_METHOD_GROUP( 2 )
 DEFINE_MATRIX_METHOD_GROUP( 3 )
