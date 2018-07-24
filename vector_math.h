@@ -45,7 +45,7 @@ float randf();
  *	@param		t_b - the source float array to copy from
  *	@returns	the address of t_target to allow nesting vector operations
  */
-float* vec_copy(float* t_target, float* t_b)
+float* vec_copy(float* t_target, float* t_b);
  
 /**	Sets t_target to the sum vector of t_a and t_b
  *	@memberof	vec

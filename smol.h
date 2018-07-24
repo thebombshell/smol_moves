@@ -142,6 +142,40 @@ void free_smol(smol* t_smol);
  */
 void smol_run(smol* t_smol);
 
+/** Posts a message fitting the given description to the given smol contexts system thread
+ *	@memberof	smol
+ *	@param		t_smol - the smol context whose system to send the message to
+ *	@param		t_is_persistent - if non-zero the given message will trigger each message loop until a dispose message is received (this should only be done with repeatable tasks, such as queuing a draw)
+ *	@param		t_type - in identifier of the type of message being sent
+ *	@param		t_data_size - the size of the data buffers
+ *	@param		t_data_ptr - a pointer to the data buffers
+ *	@returns	An immutable pointer to the completed message which is sent, intended for use with t_is_persistent, allowing the pointer to be sent later as a dispose message
+ */
+const smol_message* smol_post_system(smol* t_smol, int t_is_persistent, unsigned int t_type, unsigned int t_data_size, const void* t_data_ptr);
+
+/** Posts a message fitting the given description to the given smol contexts logic thread
+ *	@memberof	smol
+ *	@param		t_smol - the smol context whose logic to send the message to
+ *	@param		t_is_persistent - if non-zero the given message will trigger each message loop until a dispose message is received (this should only be done with repeatable tasks, such as queuing a draw)
+ *	@param		t_type - in identifier of the type of message being sent
+ *	@param		t_data_size - the size of the data buffers
+ *	@param		t_data_ptr - a pointer to the data buffers
+ *	@returns	An immutable pointer to the completed message which is sent, intended for use with t_is_persistent, allowing the pointer to be sent later as a dispose message
+ */
+const smol_message* smol_post_logic(smol* t_smol, int t_is_persistent, unsigned int t_type, unsigned int t_data_size, const void* t_data_ptr);
+
+/** Posts a message fitting the given description to the given smol contexts helper thread
+ *	@memberof	smol
+ *	@param		t_smol - the smol context whose helper to send the message to
+ *	@param		t_is_persistent - if non-zero the given message will trigger each message loop until a dispose message is received (this should only be done with repeatable tasks, such as queuing a draw)
+ *	@param		t_type - in identifier of the type of message being sent
+ *	@param		t_data_size - the size of the data buffers
+ *	@param		t_data_ptr - a pointer to the data buffers
+ *	@returns	An immutable pointer to the completed message which is sent, intended for use with t_is_persistent, allowing the pointer to be sent later as a dispose message
+ */
+const smol_message* smol_post_helper(smol* t_smol, int t_is_persistent, unsigned int t_type, unsigned int t_data_size, const void* t_data_ptr);
+
+
 /** Swaps the backbuffer and forebuffer of a smol context
  *	@memberof	smol
  *	@param		t_smol - the smol context to swap buffers of

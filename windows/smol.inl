@@ -218,11 +218,11 @@ int final_threaded_message_queue(smol_thread_message_queue* t_queue) {
 	return 1;
 }
 
-int post_threaded_message(smol_thread_message_queue* t_queue, unsigned int t_type, unsigned int t_data_size, const void* t_data_ptr) {
+const smol_message* post_threaded_message(smol_thread_message_queue* t_queue, unsigned int t_type, unsigned int t_data_size, const void* t_data_ptr) {
 	
 	assert(t_queue);
 	
-	smol_message* message;
+	const smol_message* output;
 	DWORD result = WaitForSingleObject(t_queue->write_mutex, INFINITE);
 	if (result) {
 		
@@ -230,8 +230,7 @@ int post_threaded_message(smol_thread_message_queue* t_queue, unsigned int t_typ
 		return 0;
 	}
 	
-	message = alloc_message(t_type, t_data_size, t_data_ptr);
-	queue_message(t_queue->write_queue, message);
+	output = queue_message(t_queue->write_queue, t_type, t_data_size, t_data_ptr);
 	
 	if (!ReleaseMutex(t_queue->write_mutex)) {
 		
@@ -240,7 +239,37 @@ int post_threaded_message(smol_thread_message_queue* t_queue, unsigned int t_typ
 	}
 	SetEvent(t_queue->message_event);
 	
-	return 1;
+	return output;
+}
+
+const smol_message* smol_post_system(smol* t_smol, int t_is_persistent, unsigned int t_type, unsigned int t_data_size, const void* t_data_ptr) {
+	
+	assert(t_smol);
+	
+	return post_threaded_message
+		( &t_smol->queue
+		, (t_type & SMOL_MSG_TYPE_MASK) | SMOL_MSG_TARGET_SYSTEM | (t_is_persistent ? SMOL_MSG_INFO_PERSIST : 0 )
+		, t_data_size, t_data_ptr);
+}
+
+const smol_message* smol_post_logic(smol* t_smol, int t_is_persistent, unsigned int t_type, unsigned int t_data_size, const void* t_data_ptr) {
+	
+	assert(t_smol);
+	
+	return post_threaded_message
+		( &t_smol->logic.queue
+		, (t_type & SMOL_MSG_TYPE_MASK) | SMOL_MSG_TARGET_LOGIC | (t_is_persistent ? SMOL_MSG_INFO_PERSIST : 0 )
+		, t_data_size, t_data_ptr);
+}
+
+const smol_message* smol_post_helper(smol* t_smol, int t_is_persistent, unsigned int t_type, unsigned int t_data_size, const void* t_data_ptr) {
+	
+	assert(t_smol);
+	
+	return post_threaded_message
+		( &t_smol->helper.queue
+		, (t_type & SMOL_MSG_TYPE_MASK) | SMOL_MSG_TARGET_HELPER | (t_is_persistent ? SMOL_MSG_INFO_PERSIST : 0 )
+		, t_data_size, t_data_ptr);
 }
 
 int handle_threaded_messages(smol_thread_message_queue* t_queue, void (*t_callback)(const smol_message* t_message)) {
@@ -248,8 +277,9 @@ int handle_threaded_messages(smol_thread_message_queue* t_queue, void (*t_callba
 	assert(t_queue && t_callback);
 	
 	HANDLE handles[2] = {t_queue->write_mutex, t_queue->read_mutex};
-	smol_message* message;
+	smol_message message;
 	smol_message_queue* queue;
+	unsigned int dispose;
 	
 	DWORD result = WaitForMultipleObjects(2, &handles[0], 1, INFINITE);
 	if (result) {
@@ -268,13 +298,22 @@ int handle_threaded_messages(smol_thread_message_queue* t_queue, void (*t_callba
 		return 0;
 	}
 	
+	/* flush the queue, resetting the current message */
+	
+	queue_flush(queue);
+	
+	/* if the queue still has a message */
+	
 	while (queue_has_message(queue)) {
 		
-		message = pop_message(queue, 0);
+		dispose = pop_message(queue, &message);
 		
-		t_callback(message);
+		t_callback(&message);
 		
-		free_message(message);
+		if (dispose) {
+		
+			free_message(&message);
+		}
 	}
 		
 	if (!ReleaseMutex(t_queue->read_mutex)) {
@@ -498,7 +537,25 @@ void smol_callback(const smol_message* t_message) {
 	
 	assert(t_message);
 	
-	
+	switch (t_message->type & SMOL_MSG_TYPE_MASK) {
+				
+		case SMOL_MSG_DRAW:
+		break;
+		case SMOL_MSG_MATERIAL:
+		break;
+		case SMOL_MSG_MESH:
+		break;
+		case SMOL_MSG_PASS:
+		break;
+		case SMOL_MSG_PATH:
+		break;
+		case SMOL_MSG_STAGE:
+		break;
+		case SMOL_MSG_UNIFORM:
+		break;
+		case SMOL_MSG_VIEW:
+		break;
+	}
 }
 
 void smol_run(smol* t_smol) {
@@ -527,7 +584,7 @@ void smol_run(smol* t_smol) {
 		
 		start = clock();
 		
-		/* fps counting and printing*/
+		/* fps counting and printing */
 		
 		frame_timer += delta;
 		if (frame_timer > 1.0) {
