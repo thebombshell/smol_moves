@@ -28,13 +28,37 @@
  */
 #define SMOL_MSG_DISPOSE			0x00000000
 #define SMOL_MSG_DRAW				0x00000100
+
+int message_draw(const char* t_mesh, const char* t_material, const char* t_uniforms, void* t_output, unsigned int* t_output_length);
+
 #define SMOL_MSG_MATERIAL			0x00000200
+
+int message_material(const char* t_mesh, const char* t_material, const char* t_uniforms, void* t_output, unsigned int* t_output_length);
+
 #define SMOL_MSG_MESH				0x00000300
+
+int message_mesh(unsigned int t_vert_length, void* t_vert_data, unsigned int t_indices_length, void* t_indices_data, void* t_output, unsigned int* t_output_length);
+
 #define SMOL_MSG_PASS				0x00000400
+
+int message_pass(const char* t_vertex_shader, const char* t_index_shader, void* t_output, unsigned int* t_output_length);
+
 #define SMOL_MSG_PATH				0x00000500
+
+int message_path(unsigned int t_pass_count, const char** t_pass_names, const char* t_uniforms, void* t_output, unsigned int* t_output_length);
+
 #define SMOL_MSG_STAGE				0x00000600
+
+int message_stage(unsigned int t_pass_count, const char** t_pass_names, const char* t_uniforms, void* t_output, unsigned int* t_output_length);
+
 #define SMOL_MSG_UNIFORM			0x00000700
+
+int message_uniform(unsigned int t_uniform_count, const char** t_uniform_names, void* t_output, unsigned int* t_output_length);
+
 #define SMOL_MSG_VIEW				0x00000800
+
+int message_view(void* t_output, unsigned int* t_output_length);
+
 
 typedef struct smol_message smol_message;
 
