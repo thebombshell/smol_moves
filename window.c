@@ -1,7 +1,7 @@
 
 #include "window.h"
 
-#include "../log.h"
+#include "log.h"
 
 #include <assert.h>
 

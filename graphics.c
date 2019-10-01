@@ -1,7 +1,7 @@
 
 #include "graphics.h"
 
-#include "../log.h"
+#include "log.h"
 
 #include <assert.h>
 #include <GL/wglext.h>
@@ -12,8 +12,8 @@ const PIXELFORMATDESCRIPTOR g_pixel_format_descriptor = {
 };
 
 const int g_graphics_attributes[7] =
-	{ WGL_CONTEXT_MAJOR_VERSION_ARB, 3
-	, WGL_CONTEXT_MINOR_VERSION_ARB, 3
+	{ WGL_CONTEXT_MAJOR_VERSION_ARB, 4
+	, WGL_CONTEXT_MINOR_VERSION_ARB, 6
     , WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB
 	, 0
 	};
@@ -94,4 +94,87 @@ void final_graphics(graphics* t_graphics) {
 void graphics_swap_buffers(graphics* t_graphics) {
 	
 	SwapBuffers(t_graphics->device);
+}
+
+int init_shader
+	( shader* t_shader
+	, unsigned int t_shader_type
+	, unsigned int t_string_count
+	, const char** t_shader_strings
+	, const int* t_shader_lengths) {
+	
+	assert(t_shader);
+	
+	int is_compiled;
+	int err_length;
+	
+	t_shader->id = glCreateShader(t_shader_type);
+	
+	glShaderSource(t_shader->id, t_string_count, t_shader_strings, t_shader_lengths);
+	glCompileShader(t_shader->id);
+	
+	glGetShaderiv(t_shader->id, GL_INFO_LOG_LENGTH, &is_compiled);
+	if (!is_compiled) {
+		
+		char err_log[1024];
+		
+		glGetShaderInfoLog(t_shader->id, 1024, &err_length, err_log);
+		
+		ERR("failed to compile shader: %s", err_log);
+		
+		glDeleteShader(t_shader->id);
+		
+		return 0;
+	}
+	return 1;
+}
+
+void final_shader(shader* t_shader) {
+	
+	assert(t_shader);
+	
+	glDeleteShader(t_shader->id);
+}
+
+int init_program(program* t_program, unsigned int t_shader_count, shader** t_shaders) {
+	
+	assert(t_program);
+	
+	int is_linked;
+	int err_length;
+	unsigned int i;
+	
+	t_program->shader_count = t_shader_count;
+	t_program->shaders = t_shaders;
+	
+	t_program->id = glCreateProgram();
+	
+	for (i = 0; i < t_shader_count; ++i) {
+		
+		glAttachShader(t_program->id, t_shaders[i]->id);
+	}
+	
+	glLinkProgram(t_program->id);
+	
+	glGetProgramiv(t_program->id, GL_LINK_STATUS, &is_linked);
+	if (!is_linked) {
+		
+		char err_log[1024];
+		
+		glGetProgramInfoLog(t_program->id, 1024, &err_length, err_log);
+		
+		ERR("failed to link program: %s", err_log);
+		
+		glDeleteProgram(t_program->id);
+		
+		return 0;
+	}
+	return 1;
+}
+
+void final_program(program* t_program) {
+	
+	assert(t_program);
+	
+	glDeleteProgram(t_program->id);
 }
